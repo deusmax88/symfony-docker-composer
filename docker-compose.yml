@@ -1,0 +1,96 @@
+version: "3.7"
+services:
+  #######
+  # PHP #
+  #######
+  php-fpm:
+    build: 
+      context: './docker/php-fpm/'
+      args:
+          host_user: ${HOST_USER}
+          host_group: ${HOST_GROUP}
+    depends_on:
+      - mysql
+    networks:
+      symfony-docker-dev.com:
+        aliases:
+          - "php-fpm"
+    volumes:
+      - ${PROJECT_ROOT}/:/var/www/html/
+    environment:
+      COMPOSER_MEMORY_LIMIT: ${PHPFPM_COMPOSER_MEMORY_LIMIT}
+      SYMFONY_ENV: "${PHPFPM_SYMFONY_ENV}"
+  ######################
+  # Apache Application #
+  ######################
+  www:
+    build:
+      context: './docker/apache/'
+      args:
+        host_user: ${HOST_USER}
+        host_group: ${HOST_GROUP}
+    depends_on:
+      - php-fpm
+    expose:
+      - "80"
+    networks:
+      symfony-docker-dev.com:
+        aliases:
+          - "www"
+    volumes:
+      - ${PROJECT_ROOT}/:/var/www/html/
+  #########
+  # MySql #
+  #########
+  mysql:
+    image: mysql:5.7
+    restart: always
+    networks:
+      symfony-docker-dev.com:
+        aliases:
+          - "mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DB_NAME}"
+      MYSQL_USER: "${MYSQL_DB_USERNAME}"
+      MYSQL_PASSWORD: "${MYSQL_DB_PASSWORD}"
+  ##############
+  # PhpMyAdmin #
+  ##############
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mysql
+    restart: always
+    expose:
+      - "80"
+    networks:
+      symfony-docker-dev.com:
+        aliases:
+          - "phpmyadmin"
+    links:
+      - mysql:db
+    volumes:
+      - /sessions
+  ################
+  # Host Manager #
+  ################
+  host_manager:
+    image: iamluc/docker-hostmanager
+    restart: always
+    networks:
+      symfony-docker-dev.com:
+        aliases:
+          - "host_manager"
+    volumes:
+      - ${HOSTMANAGER_PATH_DOCKER_SOCK}:/var/run/docker.sock
+      - ${HOSTMANAGER_PATH_HOST_FILE}:/hosts
+networks:
+  symfony-docker-dev.com:
+    name: "symfony-docker-dev.com"
+    ipam:
+      driver: default
+      config:
+        - subnet: ${PROJECT_SUBNET}
+volumes:
+  data:
