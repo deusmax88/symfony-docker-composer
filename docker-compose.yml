@@ -1,8 +1,11 @@
 version: "3.7"
+###########################
+#     S E R V I C E S     #
+###########################
 services:
-  #######
-  # PHP #
-  #######
+  ###########
+  # PHP-FPM #
+  ###########
   php-fpm:
     build: 
       context: './docker/php-fpm/'
@@ -75,7 +78,7 @@ services:
   ################
   # Host Manager #
   ################
-  host_manager:
+  host-manager:
     image: iamluc/docker-hostmanager
     restart: always
     networks:
@@ -85,6 +88,9 @@ services:
     volumes:
       - ${HOSTMANAGER_PATH_DOCKER_SOCK}:/var/run/docker.sock
       - ${HOSTMANAGER_PATH_HOST_FILE}:/hosts
+###########################
+#     N E T W O R K S     #
+###########################
 networks:
   symfony-docker-dev.com:
     name: "symfony-docker-dev.com"
@@ -92,5 +98,8 @@ networks:
       driver: default
       config:
         - subnet: ${PROJECT_SUBNET}
+#########################
+#     V O L U M E S     #
+#########################
 volumes:
   data:
