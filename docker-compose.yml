@@ -20,8 +20,10 @@ services:
           - "php-fpm"
     volumes:
       - ${PROJECT_ROOT}/:/var/www/html/
+      - $SSH_AUTH_SOCK:/ssh-auth.sock
     environment:
       COMPOSER_MEMORY_LIMIT: ${PHPFPM_COMPOSER_MEMORY_LIMIT}
+      SSH_AUTH_SOCK: ${PHPFPM_PATH_SSH_AUTH_SOCK}
       SYMFONY_ENV: "${PHPFPM_SYMFONY_ENV}"
   ###########
   # Apache  #
